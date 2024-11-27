@@ -1,0 +1,22 @@
+{
+  "name": "private-home-chat",
+  "version": "0.1.4",
+  "main": "./server/main.js",
+  "type": "module",
+  "scripts": {
+    "api": "node --watch --env-file=.env ./server/main.js",
+    "socket": "node --watch --env-file=.env ./server/socketServer/socket.js"
+  },
+  "author": "Aaron Allen",
+  "license": "Apache-2.0",
+  "description": "",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "mysql2": "^3.11.4",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "npm-check-updates": "^17.1.11"
+  }
+}
