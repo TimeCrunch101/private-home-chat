@@ -1,9 +1,9 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
-const { contextBridge, ipcRenderer } = require('electron')
+import { contextBridge, ipcRenderer } from 'electron'
 
 contextBridge.exposeInMainWorld('versions', {
-  notify: (title, body) => ipcRenderer.invoke('notify',title, body)
-  
+  notify: (title, body) => ipcRenderer.invoke('notify',title, body),
+  encrypt: (msg) => ipcRenderer.invoke("encrypt", msg)
 })

@@ -1,6 +1,8 @@
-const { app, BrowserWindow, Tray, Menu, nativeImage, Notification, ipcMain } = require('electron');
-const path = require('node:path');
-const { updateElectronApp } = require('update-electron-app')
+import { app, BrowserWindow, Tray, Menu, nativeImage, Notification, ipcMain } from 'electron';
+import { join } from 'node:path';
+import { updateElectronApp } from 'update-electron-app';
+import { HomeRSA } from '../../server/controllers/generator';
+const rsa = new HomeRSA()
 
 
 let mainWindow = null
@@ -31,14 +33,14 @@ const createWindow = () => {
     height: 600,
     icon: "./public/icon.ico",
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: join(__dirname, 'preload.js'),
     },
   });
 
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
-    mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
+    mainWindow.loadFile(join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
   }
 
   if (!app.isPackaged) {
@@ -69,41 +71,51 @@ const notify = (title, body) => {
 }
 
 app.whenReady().then(() => {
-
-  createWindow();
-
-  ipcMain.handle("notify", (event, title, body) => {
-    if (!mainWindow.isFocused()) {
-      notify(title, body)
-    }
-  })
+  rsa.initialize().then(() => {
+    createWindow();
+    ipcMain.handle("notify", (event, title, body) => {
+      if (!mainWindow.isFocused()) {
+        notify(title, body)
+      }
+    })
   
-  const icon = nativeImage.createFromPath(path.join(__dirname,"icon.png"))
-  tray = new Tray(icon)
-  const contextMenu = Menu.buildFromTemplate([
-    { 
-      label: 'Quit',
-      click: () => {
-        closeApp = true
-        handleQuit()
+    ipcMain.handle("encrypt", (event, msg) => {
+      const encryptedMsg = rsa.encrypt(msg)
+      console.log(encryptedMsg)
+      return "testing123"
+    })
+    
+    const icon = nativeImage.createFromPath(join(__dirname,"icon.png"))
+    tray = new Tray(icon)
+    const contextMenu = Menu.buildFromTemplate([
+      { 
+        label: 'Quit',
+        click: () => {
+          closeApp = true
+          handleQuit()
+        }
+      },
+      { 
+        label: 'Show Window',
+        click: () => {
+          mainWindow.show()
+        }
+      },
+    ])
+    tray.setToolTip('Home Chat')
+    tray.setTitle('Home Chat')
+    tray.setContextMenu(contextMenu)
+    tray.addListener("click", () => mainWindow.show())
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
       }
-    },
-    { 
-      label: 'Show Window',
-      click: () => {
-        mainWindow.show()
-      }
-    },
-  ])
-  tray.setToolTip('Home Chat')
-  tray.setTitle('Home Chat')
-  tray.setContextMenu(contextMenu)
-  tray.addListener("click", () => mainWindow.show())
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
-  });
+    });
+  }).catch((err) => {
+    console.error(err)
+    app.quit()
+  })
+
 });
 
 app.on('window-all-closed', () => {

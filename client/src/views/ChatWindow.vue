@@ -14,7 +14,8 @@ const room = ref({
     roomName: ""
 })
 
-socket.on("room-emit", (data) => {
+socket.on("room-emit", async (data) => {
+    // Dcrypt here
     chats.value.push({
         string: data.msg,
         isSelf: false,
@@ -24,7 +25,8 @@ socket.on("room-emit", (data) => {
     window.scrollTo(0, document.body.scrollHeight+50)
 })
 
-const sendMsg = (chat) => {
+const sendMsg = async (chat) => {
+    // encrypt here
     socket.emit("room-msg", {
         msg: chat,
         room: connectedRoom.value,
