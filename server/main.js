@@ -3,6 +3,7 @@ console.info(`ENV: ${process.env.NODE_ENV}`)
 import express from "express"
 import { initGetRouter } from "./router/getRouter.js"
 import { initPostRouter } from "./router/postRouter.js"
+import "./controllers/generator.js"
 
 const app = express()
 
